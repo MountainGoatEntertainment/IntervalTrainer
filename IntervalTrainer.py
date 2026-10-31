@@ -38,6 +38,9 @@ KEY_TO_SEMITONES = {
     pygame.K_9: 9, pygame.K_0: 10, pygame.K_MINUS: 11, pygame.K_EQUALS: 12,
 }
 
+KEYBOARD_LOW, KEYBOARD_HIGH = 24, 96  # C1..C7, centred on C4 (roots + octave fit)
+BLACK_PCS = {1, 3, 6, 8, 10}
+
 NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
 
 
@@ -187,11 +190,12 @@ class Trainer:
         pygame.mixer.pre_init(SAMPLE_RATE, -16, 2, 512)
         pygame.init()
         pygame.display.set_icon(make_icon())
-        self.screen = pygame.display.set_mode((560, 520))
+        self.screen = pygame.display.set_mode((560, 610))
         pygame.display.set_caption("Interval Trainer")
         self.font = pygame.font.SysFont("Helvetica", 20)
         self.big = pygame.font.SysFont("Helvetica", 34, bold=True)
         self.small = pygame.font.SysFont("Helvetica", 15)
+        self.tiny = pygame.font.SysFont("Helvetica", 10)
         self.channel = pygame.mixer.Channel(0)
 
         self.engine = make_engine()
@@ -201,11 +205,15 @@ class Trainer:
         self.next_at = 0  # pygame ticks when the next interval may start
         self.last_root: int | None = None
         self.current: tuple[int, int] | None = None
+        self.events: list[NoteEvent] = []  # what is playing, for the keyboard
+        self.play_start = 0  # pygame ticks when the current sound started
+        self.key_rects = self.layout_keyboard(16, 456, 528, 80)
 
     def select(self, semitones: int):
         self.semitones = semitones
         self.playing = True
         self.channel.stop()
+        self.events = []
         self.next_at = 0
 
     def toggle(self):
@@ -213,6 +221,7 @@ class Trainer:
             return
         self.playing = not self.playing
         self.channel.stop()
+        self.events = []
         self.next_at = 0
 
     def play_next(self):
@@ -238,7 +247,50 @@ class Trainer:
             np.ascontiguousarray(self.engine.render(events, total))
         )
         self.channel.play(sound)
+        self.events = events
+        self.play_start = pygame.time.get_ticks()
         self.next_at = pygame.time.get_ticks() + int((total + 0.4) * 1000)
+
+    @staticmethod
+    def layout_keyboard(x: int, y: int, w: int, h: int) -> dict[int, pygame.Rect]:
+        """Rects for every key from KEYBOARD_LOW to KEYBOARD_HIGH."""
+        notes = range(KEYBOARD_LOW, KEYBOARD_HIGH + 1)
+        whites = [n for n in notes if n % 12 not in BLACK_PCS]
+        ww = w / len(whites)
+        bw, bh = ww * 0.6, h * 0.6
+        rects: dict[int, pygame.Rect] = {}
+        wi = 0
+        for n in notes:
+            if n % 12 in BLACK_PCS:
+                cx = x + wi * ww  # boundary between the neighbouring white keys
+                rects[n] = pygame.Rect(round(cx - bw / 2), y, round(bw), round(bh))
+            else:
+                left = round(x + wi * ww)
+                rects[n] = pygame.Rect(left, y, round(x + (wi + 1) * ww) - left, h)
+                wi += 1
+        return rects
+
+    def draw_keyboard(self, accent):
+        elapsed = (pygame.time.get_ticks() - self.play_start) / 1000
+        sounding = {e.midi for e in self.events if e.start <= elapsed < e.start + e.duration}
+        interval = set(self.current) if self.current and self.events else set()
+        black = [n for n in self.key_rects if n % 12 in BLACK_PCS]
+        white = [n for n in self.key_rects if n % 12 not in BLACK_PCS]
+        for n in white + black:  # blacks last so they sit on top
+            r = self.key_rects[n]
+            is_black = n in black
+            if n in sounding:
+                colour = accent
+            elif n in interval:  # the interval's two keys, between notes: grey
+                colour = (100, 102, 112) if is_black else (165, 168, 178)
+            else:
+                colour = (20, 20, 24) if is_black else (240, 240, 242)
+            pygame.draw.rect(self.screen, colour, r, border_radius=2)
+            if not is_black:
+                pygame.draw.rect(self.screen, (60, 62, 70), r, 1, border_radius=2)
+            if n % 12 == 0 and n not in sounding:  # label the Cs for orientation
+                label = self.tiny.render(note_name(n), True, (110, 110, 120))
+                self.screen.blit(label, (r.centerx - label.get_width() // 2, r.bottom - 26))
 
     def draw(self):
         bg, fg, dim, accent = (24, 26, 32), (230, 230, 235), (120, 125, 140), (90, 170, 255)
@@ -266,12 +318,14 @@ class Trainer:
             self.screen.blit(self.font.render(f"{semis} st", True, dim), (300, y))
             y += 28
 
+        self.draw_keyboard(accent)
+
         help_lines = [
             f"Space: stop/resume   Up/Down: speed ({self.note_len:.2f}s per note)   Esc: quit",
             f"Sound: {self.engine.name}",
         ]
         for i, line in enumerate(help_lines):
-            self.screen.blit(self.small.render(line, True, dim), (24, 460 + i * 22))
+            self.screen.blit(self.small.render(line, True, dim), (24, 550 + i * 22))
         pygame.display.flip()
 
     def run(self):

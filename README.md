@@ -65,6 +65,11 @@ Pressing a different interval key switches immediately. The window shows the
 selected interval, the two notes currently playing (e.g. `E3 – G#3`), the
 speed and which sound engine is in use.
 
+A piano keyboard from C1 to C7 (centred on middle C, C4) runs along the bottom
+of the window. Keys light up blue while their note is sounding, and the
+interval's two keys stay grey between notes so you can always see where they
+are.
+
 The `-` and `=` keys are the ones to the right of `0` on a US keyboard layout.
 On other layouts use whichever keys produce `-` and `=`.
 
