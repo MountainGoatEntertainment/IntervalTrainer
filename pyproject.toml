@@ -1,0 +1,11 @@
+[project]
+name = "interval-trainer"
+version = "0.1.0"
+description = "Ear training: hear intervals from a minor 2nd to an octave on random roots"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "numpy>=2.5.4",
+    "pyfluidsynth>=1.4.0",
+    "pygame-ce>=2.5.8",
+]
