@@ -30,7 +30,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 ```
 cd /Volumes/SSD/ClaudeWork/interval-trainer
-uv run interval_trainer.py
+uv run IntervalTrainer.py
 ```
 
 The first run installs the dependencies (pygame-ce, numpy, pyfluidsynth) into
@@ -98,7 +98,7 @@ and FluidSynth are available it uses real piano sound instead.
 The program looks for a soundfont in this order:
 
 1. the file named by the `INTERVAL_SF2` environment variable, e.g.
-   `INTERVAL_SF2=~/sounds/piano.sf2 uv run interval_trainer.py`
+   `INTERVAL_SF2=~/sounds/piano.sf2 uv run IntervalTrainer.py`
 2. `soundfonts/*.sf2` in the project folder
 3. `~/Library/Audio/Sounds/Banks/*.sf2`
 4. `/opt/homebrew/share/soundfonts/`, `/usr/local/share/soundfonts/`,
@@ -112,7 +112,7 @@ Acoustic Grand Piano in General MIDI soundfonts.
 - **Still says "Simple synth" after installing FluidSynth:** pyfluidsynth finds
   Homebrew's library through the `HOMEBREW_PREFIX` environment variable. Make sure
   your shell profile contains `eval "$(/opt/homebrew/bin/brew shellenv)"`, or run
-  with `HOMEBREW_PREFIX=/opt/homebrew uv run interval_trainer.py`. The reason the
+  with `HOMEBREW_PREFIX=/opt/homebrew uv run IntervalTrainer.py`. The reason the
   piano could not be loaded is printed in the terminal.
 - **Keys do nothing:** click the window first so it has keyboard focus.
 - **No sound:** check the system output device and volume; the program plays
@@ -121,7 +121,7 @@ Acoustic Grand Piano in General MIDI soundfonts.
 ## Project layout
 
 ```
-interval_trainer.py   the whole program (sound engines, UI, main loop)
+IntervalTrainer.py    the whole program (sound engines, UI, main loop)
 pyproject.toml        project metadata and dependencies (managed by uv)
 uv.lock               locked dependency versions
 soundfonts/           optional: put .sf2 files here
