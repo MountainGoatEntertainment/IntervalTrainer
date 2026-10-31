@@ -62,10 +62,15 @@ press an interval key.
 
 | Key   | Action                                   |
 |-------|------------------------------------------|
+| R     | Random mode: a new random interval each round |
 | Space | Stop / resume playing                    |
 | ↑     | Faster (shorter notes, down to 0.3 s)    |
 | ↓     | Slower (longer notes, up to 2.0 s)       |
 | Esc   | Quit                                     |
+
+In random mode (`R`) each round picks a random interval from the list (never the
+same one twice in a row) and plays the full sequence; the window shows which
+interval it was. Pressing an interval key leaves random mode.
 
 Pressing a different interval key switches immediately. The window shows the
 selected interval, the two notes currently playing (e.g. `E3 – G#3`), the

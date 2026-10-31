@@ -2,7 +2,8 @@
 
 Pick an interval with the number row (1-9, 0, -, =). The program keeps
 playing that interval on random roots between C2 and C6: low note, high
-note, both together, then high and low again. Space stops/resumes, Esc quits.
+note, both together, then high and low again. R plays a random interval
+each round. Space stops/resumes, Esc quits.
 """
 
 import glob
@@ -200,6 +201,7 @@ class Trainer:
 
         self.engine = make_engine()
         self.semitones: int | None = None
+        self.random_mode = False  # pick a new random interval every round
         self.playing = False
         self.note_len = 0.8  # seconds per melodic note; arrows change it
         self.next_at = 0  # pygame ticks when the next interval may start
@@ -211,13 +213,21 @@ class Trainer:
 
     def select(self, semitones: int):
         self.semitones = semitones
+        self.random_mode = False
+        self.playing = True
+        self.channel.stop()
+        self.events = []
+        self.next_at = 0
+
+    def select_random(self):
+        self.random_mode = True
         self.playing = True
         self.channel.stop()
         self.events = []
         self.next_at = 0
 
     def toggle(self):
-        if self.semitones is None:
+        if self.semitones is None and not self.random_mode:
             return
         self.playing = not self.playing
         self.channel.stop()
@@ -225,6 +235,9 @@ class Trainer:
         self.next_at = 0
 
     def play_next(self):
+        if self.random_mode:  # a different interval than last round
+            choices = [i[0] for i in INTERVALS if i[0] != self.semitones]
+            self.semitones = random.choice(choices)
         root = random.randint(ROOT_LOW, ROOT_HIGH)
         while root == self.last_root:
             root = random.randint(ROOT_LOW, ROOT_HIGH)
@@ -299,9 +312,15 @@ class Trainer:
         title = "—"
         if self.semitones is not None:
             title = next(i[2] for i in INTERVALS if i[0] == self.semitones)
+        if self.random_mode:
+            title = f"Random: {title}"
         self.screen.blit(self.big.render(title, True, fg), (24, 20))
 
-        status = "Playing" if self.playing else ("Stopped" if self.semitones else "Press a key to start")
+        if self.playing:
+            status = "Playing random" if self.random_mode else "Playing"
+        else:
+            status = "Stopped" if self.semitones else "Press a key to start"
+
         if self.current and self.semitones:
             status += f"   {note_name(self.current[0])} – {note_name(self.current[1])}"
         self.screen.blit(self.font.render(status, True, accent if self.playing else dim), (24, 66))
@@ -322,7 +341,7 @@ class Trainer:
 
         help_lines = [
             f"Space: stop/resume   Up/Down: speed ({self.note_len:.2f}s per note)   Esc: quit",
-            f"Sound: {self.engine.name}",
+            f"R: random intervals   Sound: {self.engine.name}",
         ]
         for i, line in enumerate(help_lines):
             self.screen.blit(self.small.render(line, True, dim), (24, 550 + i * 22))
@@ -340,6 +359,8 @@ class Trainer:
                     return
                 if event.key == pygame.K_SPACE:
                     self.toggle()
+                elif event.key == pygame.K_r:
+                    self.select_random()
                 elif event.key in KEY_TO_SEMITONES:
                     self.select(KEY_TO_SEMITONES[event.key])
                 elif event.key == pygame.K_UP:
