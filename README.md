@@ -8,7 +8,7 @@ Each round plays:
 
 1. the low note
 2. the high note
-3. both notes together
+3. both notes together, three times, with a short pause between each
 4. the high note
 5. the low note
 
