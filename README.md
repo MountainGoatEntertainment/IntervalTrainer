@@ -29,7 +29,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 ## Running
 
 ```
-cd /Volumes/SSD/ClaudeWork/interval-trainer
+cd <directory where the program is>
 uv run IntervalTrainer.py
 ```
 
