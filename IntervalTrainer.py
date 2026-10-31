@@ -167,6 +167,17 @@ def make_engine():
     return SimpleSynth()
 
 
+def make_icon() -> pygame.Surface:
+    """A small piano-keys icon, drawn in code so no image file is needed."""
+    icon = pygame.Surface((64, 64), pygame.SRCALPHA)
+    pygame.draw.rect(icon, (30, 30, 30), (0, 8, 64, 48), border_radius=6)
+    for i in range(5):  # white keys
+        pygame.draw.rect(icon, (245, 245, 245), (4 + i * 12, 12, 11, 40), border_radius=2)
+    for i in (0, 1, 3):  # black keys
+        pygame.draw.rect(icon, (20, 20, 20), (12 + i * 12, 12, 7, 24), border_radius=1)
+    return icon
+
+
 # --------------------------------------------------------------------------
 # Trainer
 # --------------------------------------------------------------------------
@@ -175,6 +186,7 @@ class Trainer:
     def __init__(self):
         pygame.mixer.pre_init(SAMPLE_RATE, -16, 2, 512)
         pygame.init()
+        pygame.display.set_icon(make_icon())
         self.screen = pygame.display.set_mode((560, 520))
         pygame.display.set_caption("Interval Trainer")
         self.font = pygame.font.SysFont("Helvetica", 20)
