@@ -15,6 +15,12 @@ Each round plays:
 The low note is chosen at random between C2 and C6 (middle C ± 2 octaves) and is
 never the same twice in a row.
 
+
+
+https://github.com/user-attachments/assets/7d7a0627-6182-49db-aaad-9090af8951f1
+
+
+
 ## Requirements
 
 - macOS, Linux or Windows with Python 3.12 or newer
