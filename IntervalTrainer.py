@@ -212,15 +212,15 @@ class Trainer:
         self.current = (root, top)
 
         L = self.note_len
-        events = [
-            NoteEvent(0.0, L, root),
-            NoteEvent(L, L, top),
-            NoteEvent(2 * L, 2 * L, root),
-            NoteEvent(2 * L, 2 * L, top),
-            NoteEvent(4 * L, L, top),
-            NoteEvent(5 * L, L, root),
-        ]
-        total = 6 * L + 0.8  # leave room for the release tail
+        H = 2 * L  # harmonic chord length
+        GAP = 0.15  # short pause between the repeated harmonic chords
+        events = [NoteEvent(0.0, L, root), NoteEvent(L, L, top)]
+        t = 2 * L
+        for i in range(3):
+            events += [NoteEvent(t, H, root), NoteEvent(t, H, top)]
+            t += H + (GAP if i < 2 else 0.0)
+        events += [NoteEvent(t, L, top), NoteEvent(t + L, L, root)]
+        total = t + 2 * L + 0.8  # leave room for the release tail
         self.engine.reset()
         sound = pygame.sndarray.make_sound(
             np.ascontiguousarray(self.engine.render(events, total))
